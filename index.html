@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة النقطة الطبية - متصل</title>
+    <!-- تحميل Tailwind CSS -->
+    <script src="static/tailwindcss-browser.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* All the styles from your original file are preserved here */
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #f4f7f6; /* Light gray-green background */
+            color: #1a202c; /* Dark text */
+        }
+        .card {
+            background-color: #ffffff; /* White card background */
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 12px -1px rgba(0, 0, 0, 0.07), 0 2px 8px -2px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e2e8f0;
+        }
+        /* Headers */
+        h1, h2, h3, h4, h5, h6 {
+            color: #2c7a7b; /* Medical Green-700 for titles */
+        }
+        /* Main action button */
+        .btn-primary {
+            background-color: #38b2ac; /* Medical Green-500 */
+            color: white;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #2c7a7b; /* Medical Green-700 */
+        }
+        /* Secondary action button */
+        .btn-secondary {
+            background-color: #e2e8f0; /* light gray */
+            color: #2d3748; /* dark text */
+            transition: background-color 0.2s;
+        }
+        .btn-secondary:hover {
+            background-color: #cbd5e1; /* medium gray */
+        }
+        /* Active nav link */
+        .nav-link.active {
+            border-bottom: 3px solid #38b2ac;
+            color: #38b2ac;
+        }
+        /* Form inputs */
+        input, select, textarea {
+            background-color: #ffffff !important;
+            border: 1px solid #cbd5e1 !important;
+            color: #1a202c !important;
+            border-radius: 0.375rem;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: #2c7a7b !important;
+            box-shadow: 0 0 0 3px rgba(44, 122, 123, 0.3) !important;
+            outline: none;
+        }
+        /* Table styles */
+        table {
+             background-color: #ffffff;
+        }
+        table thead tr {
+             background-color: #f1f5f9; /* Light gray header */
+             border-bottom: 1px solid #e2e8f0;
+        }
+        table thead th {
+             color: #2c7a7b; /* Medical green text */
+        }
+        table tbody tr:hover {
+             background-color: #f8fafc; /* very light hover */
+        }
+        table tbody tr {
+             border-bottom: 1px solid #e2e8f0;
+        }
+        /* Fix for helper text that was light gray */
+        .text-gray-400 {
+            color: #718096 !important;
+        }
+        .text-gray-300 {
+            color: #4a5568 !important;
+        }
+        /* Fix for specific text colors */
+        .text-green-400, .text-green-300 {
+            color: #38b2ac !important;
+        }
+        .text-white {
+             color: #1a202c; /* Change white text to dark */
+        }
+        /* Special card colors from admin view */
+        .bg-yellow-900\/50 {
+            background-color: #fffbeb !important; /* Light yellow */
+        }
+        .border-yellow-700 {
+            border-color: #fde68a !important; /* Yellow border */
+        }
+        .text-yellow-300 {
+            color: #ca8a04 !important; /* Dark yellow */
+        }
+        .bg-red-900\/50 {
+            background-color: #fff1f2 !important; /* Light red */
+        }
+        .border-red-700 {
+            border-color: #fecaca !important; /* Red border */
+        }
+        .text-red-300 {
+            color: #b91c1c !important; /* Dark red */
+        }
+        /* Message container */
+        #message-container div {
+            box-shadow: 0 4px 12px -1px rgba(0, 0, 0, 0.07);
+            color: #1a202c; /* Dark text for all messages */
+        }
+        #message-container .bg-green-500 {
+            background-color: #f0fdf4 !important;
+            border: 1px solid #bbf7d0 !important;
+            color: #166534 !important;
+        }
+        #message-container .bg-red-500 {
+            background-color: #fff1f2 !important;
+            border: 1px solid #fecaca !important;
+            color: #b91c1c !important;
+        }
+        #message-container .bg-blue-500 {
+            background-color: #eff6ff !important;
+            border: 1px solid #bfdbfe !important;
+            color: #1e40af !important;
+        }
+        /* Nurse prescription upload styles */
+        #nurse-popup {
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        #nurse-popup .prescription-upload-section {
+            border-top: 2px dashed #e2e8f0;
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+
+        #nurse-popup .prescription-upload-section h3 {
+            color: #2c7a7b;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        #nurse-popup .file-drop-area {
+            border: 2px dashed #cbd5e1;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: #f8fafc;
+        }
+
+        #nurse-popup .file-drop-area:hover {
+            border-color: #38b2ac;
+            background-color: #f0fdfa;
+        }
+
+        #nurse-popup .file-drop-area.dragover {
+            border-color: #2c7a7b;
+            background-color: #e6fffa;
+        }
+
+        #nurse-popup #nurse-selected-file-name {
+            background-color: #f7fafc;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            border: 1px solid #e2e8f0;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+
+
+<body class="p-4 md:p-8 min-h-screen">
+
+    <!-- شريط التنقل -->
+    <header class="card mb-8 p-4">
+            <!-- زر تسجيل الخروج أعلى يسار -->
+            <button onclick="logout()"
+                class="btn-primary p-2 text-sm rounded-md">
+                تسجيل خروج
+            </button>
+
+            <!-- الشعار في الأعلى -->
+            <img src="/static/logo.png"
+                 alt="Logo"
+                 style="width:150px; display:block; margin:0 auto 20px auto;">
+
+            <!-- العنوان -->
+            <h1 class="text-3xl font-bold text-center">
+                نظام إدارة النقطة الطبية
+            </h1>
+
+            <!-- روابط التنقل -->
+            <nav class="flex justify-center space-x-4 space-x-reverse mt-4 border-b border-gray-200 pb-2">
+                <a href="#" onclick="showView('home')" id="nav-home" class="nav-link p-2 text-lg active">
+                    تسجيل/بحث المرضى
+                </a>
+                <a href="#" onclick="showView('admin')" id="nav-admin" class="nav-link p-2 text-lg">
+                    لوحة الإدارة والتقارير
+                </a>
+            </nav>
+
+    </header>
+
+    <!-- حاوية العرض الرئيسي -->
+    <main id="app-container" class="max-w-4xl mx-auto">
+        <!-- Content is rendered by script.js -->
+        <p class="text-center text-gray-400 p-8">جاري تحميل البيانات...</p>
+    </main>
+
+    <!-- رسالة النظام (Alerts/Messages) -->
+    <div id="message-container" class="fixed bottom-4 right-4 z-50"></div>
+
+    <!-- The script is now loaded from an external file -->
+    <script src="script.js"></script>
+    <script src="visits.js"></script>
+    
+
+    
+    <!-- Nurse Popup -->
+    <div id="nurse-popup"
+         class="fixed inset-0 bg-black/50 hidden flex justify-center items-center z-50">
+        <div class="bg-white p-6 rounded-lg w-full max-w-md shadow-xl">
+            <h2 class="text-xl font-bold mb-4">ملاحظات الممرض </h2>
+
+            <div class="space-y-3">
+                <input id="bp" class="w-full p-2 border rounded" placeholder="الضغط">
+                <input id="pulse" type="number" class="w-full p-2 border rounded" placeholder="النبض">
+                <input id="temp" type="number" class="w-full p-2 border rounded" placeholder="الحرارة">
+                <input id="resp" type="number" class="w-full p-2 border rounded" placeholder="التنفس Resp">
+                <input id="sugar" type="number" class="w-full p-2 border rounded" placeholder="سكر Resp">
+
+                <!-- Checkboxes -->
+                <label class="flex items-center gap-2">
+                    <input type="checkbox" id="nebula"> تبخيرة
+                </label>
+
+                <label class="flex items-center gap-2">
+                    <input type="checkbox" id="injection"> حقنة
+                </label>
+
+                <label class="flex items-center gap-2">
+                    <input type="checkbox" id="gyar"> غيار
+                </label>
+
+                <textarea id="nurseExtraNotes" class="w-full p-2 border rounded" placeholder="ملاحظات إضافية"></textarea>
+            </div>
+
+            <div class="flex justify-end mt-4 gap-2">
+                <button onclick="closeNursePopup()" class="btn-secondary px-4 py-2 rounded">إلغاء</button>
+                <button id="save-nurse-data-btn" class="btn-primary px-4 py-2 rounded">حفظ</button>
+            </div>
+        </div>
+    </div>
+    <!-- Setup Modal -->
+    <div id="setup-modal" class="fixed inset-0 bg-black/60 hidden flex justify-center items-center z-50">
+        <div class="bg-white p-2 rounded-lg w-full max-w-4xl shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeSetupModal()" class="close-button absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-3xl font-bold">&times;</button>
+            <div id="setup-modal-content">
+                <!-- Content from StartUp.html will be loaded here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Import Modal -->
+    <div id="import-modal" class="fixed inset-0 bg-black/60 hidden flex justify-center items-center z-50">
+        <div class="bg-white p-6 rounded-lg w-full max-w-lg shadow-2xl relative">
+            <button onclick="closeImportModal()" class="close-button absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-3xl font-bold">&times;</button>
+            <h2 class="text-2xl font-bold mb-6">استيراد بيانات المرضى</h2>
+            <div id="import-modal-content" class="space-y-4">
+                <!-- Dynamic content will be loaded here -->
+            </div>
+        </div>
+    </div>
+</body>
+</html>

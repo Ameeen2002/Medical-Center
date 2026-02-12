@@ -1,0 +1,62 @@
+{
+  "name": "medical-point-server",
+  "version": "1.0.0",
+  "description": "Backend for the medical point application",
+  "main": "server.js",
+  "bin": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "build": "pkg . --targets node18-win-x64 --output MedicalCenters.exe --icon static/logo.ico"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^8.1.0",
+    "@prisma/client": "^5.17.0",
+    "bcryptjs": "^3.0.3",
+    "crypto": "^1.0.1",
+    "csurf": "^1.11.0",
+    "express": "^4.19.2",
+    "express-rate-limit": "^8.2.1",
+    "express-session": "^1.18.2",
+    "isomorphic-dompurify": "^2.35.0",
+    "jsdom": "^27.4.0",
+    "macaddress": "^0.5.3",
+    "multer": "^2.0.2",
+    "open": "^10.2.0",
+    "sharp": "^0.34.5"
+  },
+  "pkg": {
+    "assets": [
+      "StartUp.html",
+      "index.html",
+      "login.html",
+      "script.js",
+      "visits.js",
+      "reports.js",
+      "license.js",
+      "static/**/*"
+    ],
+    "targets": [
+      "node18-win-x64"
+    ],
+    "outputPath": "dist",
+    "icon": "static/logo.ico"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/KamalALfarra/Medical_centers/issues"
+  },
+  "homepage": "https://github.com/KamalALfarra/Medical_centers#readme",
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.10.2",
+    "dotenv": "^17.2.3",
+    "pkg": "^5.8.1",
+    "prisma": "5.17.0",
+    "typescript": "^5.9.3"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  }
+}

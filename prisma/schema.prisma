@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+  // ADD THIS LINE: This forces the client to use the traditional engine
+  binaryTargets = ["native"]
+}
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------------------------------
+// CENTER
+// -----------------------------------------
+model Center {
+  idCenter Int     @id @default(autoincrement())
+  name     String
+
+  // Relations
+  users   User[]
+  visits  Visits[]
+}
+
+
+// -----------------------------------------
+// USER
+// -----------------------------------------
+model User {
+  idUser    Int     @id @default(autoincrement())
+  userName  String
+  passWord  String
+  role      String
+  name      String
+  idCenter  Int
+  isActive   Boolean  @default(true)
+
+  // Relations
+  center         Center  @relation(fields: [idCenter], references: [idCenter])
+  doctorVisits   DoctorVisit[]
+  nurseVisits    NurseVisit[]
+  pharmacyDisp   PharmacyDispense[]
+  visits         Visits[]        @relation("DoctorForVisit")
+}
+
+
+// -----------------------------------------
+// PATIENTS
+// -----------------------------------------
+model Patients {
+  idPatient      Int     @id @default(autoincrement())
+  ID             String     @unique
+  fullName       String
+  dob            DateTime
+  gender         String
+  isPregnant     Boolean
+  phoneNumber    String
+  address        String?
+  displacedAddress     String?
+  medicalStatus  String?
+  maritalStatus  String
+  hasDisability  Boolean
+  disabilityType String?
+  createdAt      DateTime @default(now())
+
+  // Relations
+  visits Visits[]
+}
+
+
+// -----------------------------------------
+// VISITS
+// -----------------------------------------
+model Visits {
+  idVisit       String      @id @db.Uuid
+  dateOfVisit   DateTime
+  idUser        Int?
+  center        Int?
+  serverType    String
+  idPatient     Int
+  idRate        Int?
+  dateAdded     DateTime    @default(now())
+
+  // Relations
+  doctor        User?       @relation("DoctorForVisit", fields: [idUser], references: [idUser])
+  patient       Patients   @relation(fields: [idPatient], references: [idPatient])
+  centerOwner   Center?     @relation(fields: [center], references: [idCenter])
+
+  doctorVisit   DoctorVisit?
+  nurseVisit    NurseVisit?
+  pharmacy      PharmacyDispense[]
+
+  document      VisitDocument?
+  @@index([idVisit])
+}
+
+model VisitDocument {
+  idVisit       String    @id @db.Uuid
+  encryptedData Bytes
+  iv            Bytes
+  mimeType      String
+  createdAt     DateTime @default(now())
+
+  visit         Visits  @relation(fields: [idVisit], references: [idVisit], onDelete: Cascade)
+}
+
+
+
+// -----------------------------------------
+// DOCTOR VISIT
+// -----------------------------------------
+model DoctorVisit {
+  idDoctorVisit Int    @id @default(autoincrement())
+  idVisit       String    @unique @db.Uuid
+  idUser        Int
+  needFurtherTest Boolean @default(false)
+  isContagious  Boolean @default(false)
+  diagnosis     String?
+  medications   String?
+
+  visit Visits @relation(fields: [idVisit], references: [idVisit],onDelete: Cascade)
+  user  User   @relation(fields: [idUser], references: [idUser])
+}
+
+
+// -----------------------------------------
+// NURSE VISIT
+// -----------------------------------------
+model NurseVisit {
+  idNurseVisit Int    @id @default(autoincrement())
+  idVisit      String    @unique @db.Uuid
+  idUser       Int
+  nurseNote    String?
+
+  visit Visits @relation(fields: [idVisit], references: [idVisit],onDelete: Cascade)
+  user  User   @relation(fields: [idUser], references: [idUser])
+}
+
+
+// -----------------------------------------
+// PHARMACY DISPENSE
+// -----------------------------------------
+model PharmacyDispense {
+  idPharmacyDispense Int     @id @default(autoincrement())
+  idVisit            String  @db.Uuid
+  idMedicine         Int
+  quantityDispensed  Int
+  idUser             Int
+  dispensedAt        DateTime @default(now())
+
+  visit    Visits   @relation(fields: [idVisit], references: [idVisit],onDelete: Cascade)
+  user     User     @relation(fields: [idUser], references: [idUser])
+  medicine Medicine @relation(fields: [idMedicine], references: [idMedicine])
+
+}
+
+
+model Medicine {
+  idMedicine   Int      @id @default(autoincrement())
+  name         String   @unique
+  type         String
+  amount       Int?
+  createdAt    DateTime @default(now())
+
+  pharmacyDispenses PharmacyDispense[]
+}
+
